@@ -1,1 +1,4 @@
-<Solution />
+<Solution>
+  <Project Path="src/mynt.Vulkan/mynt.Vulkan.csproj" />
+  <Project Path="src/mynt/mynt.csproj" />
+</Solution>
