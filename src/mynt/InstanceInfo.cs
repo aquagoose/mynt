@@ -1,8 +1,10 @@
 namespace mynt;
 
-public struct InstanceInfo
+public struct InstanceInfo(string appName, bool debug = false, Backend backend = Backend.Unknown)
 {
-    public string AppName;
+    public string AppName = appName;
 
-    public Backend Backend;
+    public bool Debug = debug;
+
+    public Backend Backend = backend;
 }
