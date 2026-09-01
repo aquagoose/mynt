@@ -1,7 +1,9 @@
 global using VkInstance = Silk.NET.Vulkan.Instance;
 using System.Reflection;
+using Silk.NET.Core;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace mynt.Vulkan;
 
@@ -16,6 +18,16 @@ internal sealed unsafe class VulkanInstance : Instance
     {
         _vk = Vk.GetApi();
 
+        Version32 instanceVersion;
+        _vk.EnumerateInstanceVersion((uint*) &instanceVersion).Check("Enumerate instance version");
+        Mynt.Log(Mynt.LogSeverity.Info, $"Vulkan API version: {instanceVersion.Major}.{instanceVersion.Minor}.{instanceVersion.Patch}");
+
+        if (instanceVersion.Value < Vk.Version13)
+        {
+            throw new PlatformNotSupportedException(
+                $"Vulkan version 1.3 is required, but only {instanceVersion.Major}.{instanceVersion.Minor}.{instanceVersion.Patch} is supported. Please ensure your drivers are up-to-date.");
+        }
+
         nint pAppName = SilkMarshal.StringToPtr(info.AppName);
         // the entry assembly is usually the application, so get the version from that
         Version appVersion = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(0, 0, 0);
@@ -23,6 +35,26 @@ internal sealed unsafe class VulkanInstance : Instance
         // the "engine" in this case is mynt.
         nint pEngineName = SilkMarshal.StringToPtr("mynt");
         Version engineVersion = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+
+        uint numInstanceExtensions;
+        _vk.EnumerateInstanceExtensionProperties((byte*) null, &numInstanceExtensions, null);
+        ExtensionProperties* instanceExtensionProperties = stackalloc ExtensionProperties[(int) numInstanceExtensions];
+        _vk.EnumerateInstanceExtensionProperties((byte*) null, &numInstanceExtensions, instanceExtensionProperties);
+
+        uint numExtensions = 0;
+        sbyte** instanceExtensions = stackalloc sbyte*[4];
+        for (uint i = 0; i < numInstanceExtensions; i++)
+        {
+            sbyte* extensionName = (sbyte*) instanceExtensionProperties[i].ExtensionName;
+
+            if (Mynt.ManagedAndUnmanagedStringsAreEqual(KhrWin32Surface.ExtensionName, extensionName) ||
+                Mynt.ManagedAndUnmanagedStringsAreEqual(KhrWaylandSurface.ExtensionName, extensionName) ||
+                Mynt.ManagedAndUnmanagedStringsAreEqual(KhrXcbSurface.ExtensionName, extensionName) ||
+                Mynt.ManagedAndUnmanagedStringsAreEqual(KhrXlibSurface.ExtensionName, extensionName))
+            {
+                instanceExtensions[numExtensions++] = extensionName;
+            }
+        }
 
         ApplicationInfo appInfo = new()
         {
@@ -39,9 +71,13 @@ internal sealed unsafe class VulkanInstance : Instance
         InstanceCreateInfo instanceInfo = new()
         {
             SType = StructureType.InstanceCreateInfo,
-            PApplicationInfo = &appInfo
+            PApplicationInfo = &appInfo,
+
+            EnabledExtensionCount = numExtensions,
+            PpEnabledExtensionNames = (byte**) instanceExtensions
         };
 
+        Mynt.Log("Creating instance.");
         _vk.CreateInstance(&instanceInfo, null, out _instance).Check("Create instance");
     }
 
