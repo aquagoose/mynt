@@ -31,7 +31,7 @@ public static class Mynt
                 return false;
         } while (unmanagedString[++i] != 0);
 
-        return true;
+        return i == @string.Length;
     }
 
     public enum LogSeverity
