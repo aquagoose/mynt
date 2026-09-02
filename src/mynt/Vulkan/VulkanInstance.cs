@@ -9,6 +9,8 @@ namespace mynt.Vulkan;
 
 internal sealed unsafe class VulkanInstance : Instance
 {
+    private static readonly Version32 ApiVersion = Vk.Version13;
+
     public override bool IsDisposed { get; protected set; }
 
     private readonly Vk _vk;
@@ -22,7 +24,7 @@ internal sealed unsafe class VulkanInstance : Instance
         _vk.EnumerateInstanceVersion((uint*) &instanceVersion).Check("Enumerate instance version");
         Mynt.Log(Mynt.LogSeverity.Info, $"Vulkan API version: {instanceVersion.Major}.{instanceVersion.Minor}.{instanceVersion.Patch}");
 
-        if (instanceVersion.Value < Vk.Version13)
+        if (instanceVersion.Value < ApiVersion)
         {
             throw new PlatformNotSupportedException(
                 $"Vulkan version 1.3 is required, but only {instanceVersion.Major}.{instanceVersion.Minor}.{instanceVersion.Patch} is supported. Please ensure your drivers are up-to-date.");
@@ -59,7 +61,7 @@ internal sealed unsafe class VulkanInstance : Instance
         ApplicationInfo appInfo = new()
         {
             SType = StructureType.ApplicationInfo,
-            ApiVersion = Vk.Version13,
+            ApiVersion = ApiVersion,
 
             PApplicationName = (byte*) pAppName,
             ApplicationVersion = Vk.MakeVersion((uint) appVersion.Major, (uint) appVersion.Minor, (uint) appVersion.Build),
@@ -82,6 +84,51 @@ internal sealed unsafe class VulkanInstance : Instance
     }
 
     public override Backend Backend => Backend.Vulkan;
+
+    public override Adapter[] EnumerateAdapters()
+    {
+        List<Adapter> adapters = [];
+
+        uint numPhysicalDevices;
+        _vk.EnumeratePhysicalDevices(_instance, &numPhysicalDevices, null);
+        PhysicalDevice* physicalDevices = stackalloc PhysicalDevice[(int) numPhysicalDevices];
+        _vk.EnumeratePhysicalDevices(_instance, &numPhysicalDevices, physicalDevices);
+
+        for (uint i = 0; i < numPhysicalDevices; i++)
+        {
+            PhysicalDevice device = physicalDevices[i];
+
+            PhysicalDeviceProperties properties;
+            PhysicalDeviceMemoryProperties memProperties;
+            PhysicalDeviceFeatures features;
+
+            _vk.GetPhysicalDeviceProperties(device, &properties);
+            _vk.GetPhysicalDeviceMemoryProperties(device, &memProperties);
+            _vk.GetPhysicalDeviceFeatures(device, &features);
+
+            if (properties.ApiVersion < ApiVersion)
+                continue;
+
+            string name = new string((sbyte*) properties.DeviceName);
+            AdapterType type = properties.DeviceType switch
+            {
+                PhysicalDeviceType.Other => AdapterType.Unknown,
+                PhysicalDeviceType.IntegratedGpu => AdapterType.Integrated,
+                PhysicalDeviceType.DiscreteGpu => AdapterType.Dedicated,
+                PhysicalDeviceType.VirtualGpu => AdapterType.Unknown,
+                PhysicalDeviceType.Cpu => AdapterType.Software,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            // todo use the other memory heaps?
+            ulong dedicatedMemory = memProperties.MemoryHeapCount > 0 ? memProperties.MemoryHeaps[0].Size : 0;
+            AdapterSupports supports = new AdapterSupports();
+
+            adapters.Add(new Adapter(device.Handle, i, name, type, dedicatedMemory, supports));
+        }
+
+        return adapters.ToArray();
+    }
 
     public override void Dispose()
     {

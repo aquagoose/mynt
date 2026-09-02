@@ -18,6 +18,11 @@ public abstract class Instance : IDisposable
     public abstract Backend Backend { get; }
 
     /// <summary>
+    /// Enumerates a list of supported <see cref="Adapter"/>s.
+    /// </summary>
+    public abstract Adapter[] EnumerateAdapters();
+
+    /// <summary>
     /// Dispose of this <see cref="Instance"/>.
     /// </summary>
     public abstract void Dispose();
