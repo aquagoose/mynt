@@ -16,6 +16,7 @@ if (MYNT_VULKAN)
     list(APPEND MYNT_SRC ${MYNT_VULKAN_SRC})
     find_package(Vulkan REQUIRED)
     list(APPEND MYNT_LIBS Vulkan::Vulkan)
+    add_compile_definitions(MYNT_VULKAN)
 endif ()
 
 add_library(mynt STATIC ${MYNT_SRC})
