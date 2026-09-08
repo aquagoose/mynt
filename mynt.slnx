@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/tests/">
+    <File Path="tests\CreateDeviceTest.cs" />
     <File Path="tests\CreateInstanceTest.cs" />
   </Folder>
   <Project Path="src/mynt/mynt.csproj" />

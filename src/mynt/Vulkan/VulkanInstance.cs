@@ -1,5 +1,6 @@
 global using VkInstance = Silk.NET.Vulkan.Instance;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Silk.NET.Core;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
@@ -44,7 +45,8 @@ internal sealed unsafe class VulkanInstance : Instance
         _vk.EnumerateInstanceExtensionProperties((byte*) null, &numInstanceExtensions, instanceExtensionProperties);
 
         uint numExtensions = 0;
-        sbyte** instanceExtensions = stackalloc sbyte*[4];
+        sbyte** instanceExtensions = stackalloc sbyte*[5];
+        instanceExtensions[numExtensions++] = (sbyte*) Marshal.StringToHGlobalAnsi(KhrSurface.ExtensionName); // ok maybe this SHOULD be a list
         for (uint i = 0; i < numInstanceExtensions; i++)
         {
             sbyte* extensionName = (sbyte*) instanceExtensionProperties[i].ExtensionName;
@@ -81,6 +83,8 @@ internal sealed unsafe class VulkanInstance : Instance
 
         Mynt.Log("Creating instance.");
         _vk.CreateInstance(&instanceInfo, null, out _instance).Check("Create instance");
+
+        Marshal.FreeHGlobal((nint) instanceExtensions[0]);
     }
 
     public override Backend Backend => Backend.Vulkan;
