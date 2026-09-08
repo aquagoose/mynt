@@ -130,6 +130,9 @@ internal sealed unsafe class VulkanInstance : Instance
         return adapters.ToArray();
     }
 
+    public override Surface CreateSurface(in SurfaceInfo info)
+        => new VulkanSurface(_vk, _instance, in info);
+
     public override void Dispose()
     {
         if (IsDisposed)
