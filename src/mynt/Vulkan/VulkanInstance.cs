@@ -137,6 +137,25 @@ internal sealed unsafe class VulkanInstance : Instance
     public override Surface CreateSurface(in SurfaceInfo info)
         => new VulkanSurface(_vk, _instance, in info);
 
+    public override Device CreateDevice(Surface surface, Adapter? adapter = null)
+    {
+        Adapter a;
+        if (adapter == null)
+        {
+            Adapter[] adapters = EnumerateAdapters();
+            if (adapters.Length == 0)
+                throw new PlatformNotSupportedException("No adapters supporting Vulkan 1.3 were enumerated.");
+
+            a = adapters[0];
+        }
+        else
+            a = adapter.Value;
+
+        PhysicalDevice device = new PhysicalDevice(a.Handle);
+
+        return new VulkanDevice(_vk, _instance, (VulkanSurface) surface, device);
+    }
+
     public override void Dispose()
     {
         if (IsDisposed)

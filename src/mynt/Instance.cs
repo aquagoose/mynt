@@ -29,6 +29,14 @@ public abstract class Instance : IDisposable
     public abstract Surface CreateSurface(in SurfaceInfo info);
 
     /// <summary>
+    /// Create a <see cref="Device"/>.
+    /// </summary>
+    /// <param name="surface">The <see cref="Surface"/> to use when creating the device.</param>
+    /// <param name="adapter">The <see cref="Adapter"/> to use, if any. If <see langword="null"/> is provided,
+    /// the default adapter will be used.</param>
+    public abstract Device CreateDevice(Surface surface, Adapter? adapter = null);
+
+    /// <summary>
     /// Dispose of this <see cref="Instance"/>.
     /// </summary>
     public abstract void Dispose();

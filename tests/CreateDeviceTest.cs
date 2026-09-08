@@ -5,6 +5,8 @@
 using mynt;
 using piko.SDL3;
 
+Mynt.MessageLogged += (message, severity, _, _) => Console.WriteLine($"[{severity}] {message}");
+
 if (!SDL.Init(SDL.InitFlags.Video | SDL.InitFlags.Events))
     throw new Exception($"Failed to initialize SDL: {SDL.GetError()}");
 
@@ -51,7 +53,9 @@ else
     throw new PlatformNotSupportedException("Unsupported platform!");
 
 Surface surface = instance.CreateSurface(in surfaceInfo);
+Device device = instance.CreateDevice(surface);
 
+device.Dispose();
 surface.Dispose();
 instance.Dispose();
 SDL.DestroyWindow(window);

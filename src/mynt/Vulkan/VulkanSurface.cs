@@ -9,8 +9,8 @@ internal sealed unsafe class VulkanSurface : Surface
 {
     private readonly Vk _vk;
     private readonly VkInstance _instance;
-    private readonly KhrSurface _khrSurface;
 
+    public readonly KhrSurface KhrSurface;
     public readonly VkSurfaceKHR Surface;
 
     public VulkanSurface(Vk vk, VkInstance instance, ref readonly SurfaceInfo info)
@@ -18,7 +18,7 @@ internal sealed unsafe class VulkanSurface : Surface
         _vk = vk;
         _instance = instance;
 
-        if (!_vk.TryGetInstanceExtension(_instance, out _khrSurface))
+        if (!_vk.TryGetInstanceExtension(_instance, out KhrSurface))
             throw new Exception("Failed to get KHRSurface extension.");
 
         switch (info.Type)
@@ -133,7 +133,7 @@ internal sealed unsafe class VulkanSurface : Surface
             return;
         IsDisposed = true;
 
-        _khrSurface.DestroySurface(_instance, Surface, null);
-        _khrSurface.Dispose();
+        KhrSurface.DestroySurface(_instance, Surface, null);
+        KhrSurface.Dispose();
     }
 }
