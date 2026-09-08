@@ -1,4 +1,4 @@
-#!/usr/bin/env dotnet
+﻿#!/usr/bin/env dotnet
 #:project mynt.Tests.Core/mynt.Tests.Core.csproj
 
 using mynt;
@@ -20,7 +20,9 @@ Console.WriteLine(instance.Backend);
 
 Surface surface = SDL.CreateMyntSurface(window, instance);
 Device device = instance.CreateDevice(surface);
+CommandList cl = device.CreateCommandList();
 
+cl.Dispose();
 device.Dispose();
 surface.Dispose();
 instance.Dispose();

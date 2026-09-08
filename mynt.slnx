@@ -2,6 +2,8 @@
   <Folder Name="/tests/">
     <File Path="tests\CreateDeviceTest.cs" />
     <File Path="tests\CreateInstanceTest.cs" />
+    <File Path="tests\CreateSwapchainTest.cs" />
+    <Project Path="tests/mynt.Tests.Core/mynt.Tests.Core.csproj" />
   </Folder>
   <Project Path="src/mynt/mynt.csproj" />
 </Solution>

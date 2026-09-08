@@ -89,6 +89,9 @@ internal sealed unsafe class VulkanDevice : Device
         _vk.GetDeviceQueue(Device, PresentQueueIndex, 0, out PresentQueue);
     }
 
+    public override CommandList CreateCommandList()
+        => new VulkanCommandList(_vk, Device, GraphicsQueueIndex);
+
     public override void Dispose()
     {
         if (IsDisposed)
