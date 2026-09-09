@@ -91,6 +91,11 @@ internal sealed unsafe class VulkanDevice : Device
         _vk.GetDeviceQueue(Device, PresentQueueIndex, 0, out PresentQueue);
     }
 
+    public override Swapchain CreateSwapchain()
+    {
+        throw new NotImplementedException();
+    }
+
     public override CommandList CreateCommandList()
         => new VulkanCommandList(_vk, Device, GraphicsQueueIndex);
 

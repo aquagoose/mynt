@@ -10,6 +10,8 @@ public abstract class Device : IDisposable
     /// </summary>
     public bool IsDisposed { get; protected set; }
 
+    public abstract Swapchain CreateSwapchain();
+
     /// <summary>
     /// Create a <see cref="CommandList"/>.
     /// </summary>
