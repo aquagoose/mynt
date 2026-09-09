@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Silk.NET.Core;
 using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 
 namespace mynt.Vulkan;
@@ -45,7 +46,7 @@ internal sealed unsafe class VulkanInstance : Instance
         _vk.EnumerateInstanceExtensionProperties((byte*) null, &numInstanceExtensions, instanceExtensionProperties);
 
         uint numExtensions = 0;
-        sbyte** instanceExtensions = stackalloc sbyte*[5];
+        sbyte** instanceExtensions = stackalloc sbyte*[6];
         instanceExtensions[numExtensions++] = (sbyte*) Marshal.StringToHGlobalAnsi(KhrSurface.ExtensionName); // ok maybe this SHOULD be a list
         for (uint i = 0; i < numInstanceExtensions; i++)
         {
@@ -54,7 +55,8 @@ internal sealed unsafe class VulkanInstance : Instance
             if (Mynt.ManagedAndUnmanagedStringsAreEqual(KhrWin32Surface.ExtensionName, extensionName) ||
                 Mynt.ManagedAndUnmanagedStringsAreEqual(KhrWaylandSurface.ExtensionName, extensionName) ||
                 Mynt.ManagedAndUnmanagedStringsAreEqual(KhrXcbSurface.ExtensionName, extensionName) ||
-                Mynt.ManagedAndUnmanagedStringsAreEqual(KhrXlibSurface.ExtensionName, extensionName))
+                Mynt.ManagedAndUnmanagedStringsAreEqual(KhrXlibSurface.ExtensionName, extensionName) ||
+                Mynt.ManagedAndUnmanagedStringsAreEqual(ExtMetalSurface.ExtensionName, extensionName))
             {
                 instanceExtensions[numExtensions++] = extensionName;
             }

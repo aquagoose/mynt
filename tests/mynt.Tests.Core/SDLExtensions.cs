@@ -39,6 +39,12 @@ public static class SDLExtensions
                         throw new PlatformNotSupportedException($"Unsupported video driver \"{driver}\"!");
                 }
             }
+            else if (OperatingSystem.IsMacOS())
+            {
+                nint view = SDL.MetalCreateView(window);
+                nint layer = SDL.MetalGetLayer(view);
+                surfaceInfo = SurfaceInfo.Cocoa(layer);
+            }
             else
                 throw new PlatformNotSupportedException("Unsupported platform!");
 
