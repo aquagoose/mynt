@@ -1,4 +1,6 @@
 global using VkDevice = Silk.NET.Vulkan.Device;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Silk.NET.Core;
 using Silk.NET.Vulkan;
 
@@ -91,6 +93,22 @@ internal sealed unsafe class VulkanDevice : Device
 
     public override CommandList CreateCommandList()
         => new VulkanCommandList(_vk, Device, GraphicsQueueIndex);
+
+    public override void ExecuteCommandList(CommandList cl)
+    {
+        VulkanCommandList vulkanCl = (VulkanCommandList) cl;
+        Debug.Assert(vulkanCl.CurrentCommandBuffer.Handle != 0,
+            "Cannot execute: No commands have been issued to the command list");
+
+        SubmitInfo submitInfo = new()
+        {
+            SType = StructureType.SubmitInfo,
+            CommandBufferCount = 1,
+            PCommandBuffers = (CommandBuffer*) Unsafe.AsPointer(ref vulkanCl.CurrentCommandBuffer)
+        };
+
+        _vk.QueueSubmit(GraphicsQueue, 1, &submitInfo);
+    }
 
     public override void Dispose()
     {

@@ -16,6 +16,14 @@ public abstract class Device : IDisposable
     public abstract CommandList CreateCommandList();
 
     /// <summary>
+    /// Submit a <see cref="CommandList"/> to the queue to be executed.
+    /// </summary>
+    /// <param name="cl">The command list to execute.</param>
+    /// <remarks>This is an asynchronous operation and the command list MAY NOT be executed immediately.
+    /// Previously submitted command lists will be executed first.</remarks>
+    public abstract void ExecuteCommandList(CommandList cl);
+
+    /// <summary>
     /// Dispose of this <see cref="Device"/>.
     /// </summary>
     public abstract void Dispose();
