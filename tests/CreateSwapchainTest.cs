@@ -22,6 +22,24 @@ Surface surface = SDL.CreateMyntSurface(window, instance);
 Device device = instance.CreateDevice(surface);
 CommandList cl = device.CreateCommandList();
 
+bool alive = true;
+while (alive)
+{
+    while (SDL.PollEvent(out SDL.Event sdlEvent))
+    {
+        switch ((SDL.EventType) sdlEvent.Type)
+        {
+            case SDL.EventType.Quit:
+                alive = false;
+                break;
+        }
+    }
+
+    cl.Begin();
+    cl.End();
+    device.ExecuteCommandList(cl);
+}
+
 cl.Dispose();
 device.Dispose();
 surface.Dispose();

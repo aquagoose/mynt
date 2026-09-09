@@ -100,6 +100,8 @@ internal sealed unsafe class VulkanDevice : Device
         Debug.Assert(vulkanCl.CurrentCommandBuffer.Handle != 0,
             "Cannot execute: No commands have been issued to the command list");
 
+        Fence fence = vulkanCl.GetOrCreateFence();
+
         SubmitInfo submitInfo = new()
         {
             SType = StructureType.SubmitInfo,
@@ -107,7 +109,9 @@ internal sealed unsafe class VulkanDevice : Device
             PCommandBuffers = (CommandBuffer*) Unsafe.AsPointer(ref vulkanCl.CurrentCommandBuffer)
         };
 
-        _vk.QueueSubmit(GraphicsQueue, 1, &submitInfo);
+        _vk.QueueSubmit(GraphicsQueue, 1, &submitInfo, fence).Check("Submit queue");
+
+        vulkanCl.FinishCommandBuffer(fence);
     }
 
     public override void Dispose()

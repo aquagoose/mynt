@@ -35,25 +35,6 @@ internal sealed unsafe class VulkanCommandList : CommandList
         _vk.CreateCommandPool(_device, &poolInfo, null, out _pool).Check("Create command pool");
     }
 
-    private CommandBuffer GetOrCreateCommandBuffer()
-    {
-        if (_availableCommandBuffers.TryDequeue(out CommandBuffer cb))
-            return cb;
-
-        CommandBufferAllocateInfo allocInfo = new()
-        {
-            SType = StructureType.CommandBufferAllocateInfo,
-            CommandPool = _pool,
-            CommandBufferCount = 1,
-            Level = CommandBufferLevel.Primary
-        };
-
-        Mynt.Log("Allocating new command buffer.");
-        _vk.AllocateCommandBuffers(_device, &allocInfo, out cb).Check("Allocate command buffer");
-
-        return cb;
-    }
-
     public override void Begin(bool reusable = false)
     {
         Debug.Assert(CurrentCommandBuffer.Handle == 0,
@@ -73,6 +54,58 @@ internal sealed unsafe class VulkanCommandList : CommandList
     {
         Debug.Assert(CurrentCommandBuffer.Handle != 0, "Cannot end: The command list is not currently active.");
         _vk.EndCommandBuffer(CurrentCommandBuffer).Check("End command buffer");
+    }
+
+    public CommandBuffer GetOrCreateCommandBuffer()
+    {
+        if (_availableCommandBuffers.TryDequeue(out CommandBuffer cb))
+            return cb;
+
+        CommandBufferAllocateInfo allocInfo = new()
+        {
+            SType = StructureType.CommandBufferAllocateInfo,
+            CommandPool = _pool,
+            CommandBufferCount = 1,
+            Level = CommandBufferLevel.Primary
+        };
+
+        Mynt.Log("Allocating command buffer.");
+        _vk.AllocateCommandBuffers(_device, &allocInfo, out cb).Check("Allocate command buffer");
+
+        return cb;
+    }
+
+    public Fence GetOrCreateFence()
+    {
+        if (_availableFences.TryDequeue(out Fence fence))
+            return fence;
+
+        FenceCreateInfo fenceInfo = new()
+        {
+            SType = StructureType.FenceCreateInfo
+        };
+
+        Mynt.Log("Creating fence.");
+        _vk.CreateFence(_device, &fenceInfo, null, out fence).Check("Create fence");
+
+        return fence;
+    }
+
+    public void FinishCommandBuffer(Fence fence)
+    {
+        _submittedCommandBuffers.Add((CurrentCommandBuffer, fence));
+        CurrentCommandBuffer = new CommandBuffer(); // reset the command buffer back to "null"
+
+        for (int i = 0; i < _submittedCommandBuffers.Count; i++)
+        {
+            if (_vk.GetFenceStatus(_device, _submittedCommandBuffers[i].fence) != Result.Success)
+                continue;
+
+            _availableCommandBuffers.Enqueue(_submittedCommandBuffers[i].cb);
+            _availableFences.Enqueue(_submittedCommandBuffers[i].fence);
+
+            _submittedCommandBuffers.RemoveAt(i--);
+        }
     }
 
     public override void Dispose()
