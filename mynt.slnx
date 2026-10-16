@@ -1,1 +1,3 @@
-<Solution />
+<Solution>
+  <Project Path="src/mynt/mynt.csproj" />
+</Solution>
