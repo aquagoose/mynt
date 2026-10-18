@@ -63,7 +63,7 @@ internal sealed unsafe class VulkanInstance : Instance
                 Utils.NullTerminatedStringEqualsManagedString(extensionName, ExtMetalSurface.ExtensionName)
             )
             {
-                instanceExtensions[++numInstanceExtensions] = extensionName;
+                instanceExtensions[numInstanceExtensions++] = extensionName;
             }
         }
 

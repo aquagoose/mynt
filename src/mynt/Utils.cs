@@ -11,7 +11,7 @@ internal static class Utils
             uint length = 0;
             do
             {
-                if (nullTerminatedString[length] != (byte) pStr[length])
+                if (length > str.Length || nullTerminatedString[length] != (byte) pStr[length])
                     return false;
             } while (nullTerminatedString[++length] != 0);
 
