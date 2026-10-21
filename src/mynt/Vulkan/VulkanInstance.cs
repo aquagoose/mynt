@@ -76,6 +76,7 @@ internal sealed unsafe class VulkanInstance : Instance
             PpEnabledExtensionNames = instanceExtensions
         };
 
+        Mynt.Log("Creating instance");
         _vk.CreateInstance(&instanceInfo, null, out _instance).Check("Create instance");
     }
     
@@ -85,6 +86,7 @@ internal sealed unsafe class VulkanInstance : Instance
             return;
         IsDisposed = true;
 
+        Mynt.Log("Destroying instance.");
         _vk.DestroyInstance(_instance, null);
         _vk.Dispose();
     }
