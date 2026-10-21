@@ -11,6 +11,12 @@ public abstract class Instance : IDisposable
     /// Gets if this <see cref="Instance"/> has been disposed.
     /// </summary>
     public abstract bool IsDisposed { get; protected set; }
+
+    /// <summary>
+    /// Queries a list of supported <see cref="Adapter"/>s.
+    /// </summary>
+    /// <returns>A list of supported <see cref="Adapter"/>s.</returns>
+    public abstract Adapter[] QueryAdapters();
     
     /// <summary>
     /// Dispose of this <see cref="Instance"/>.

@@ -79,7 +79,47 @@ internal sealed unsafe class VulkanInstance : Instance
         Mynt.Log("Creating instance");
         _vk.CreateInstance(&instanceInfo, null, out _instance).Check("Create instance");
     }
-    
+
+    public override Adapter[] QueryAdapters()
+    {
+        uint numPhysicalDevices;
+        _vk.EnumeratePhysicalDevices(_instance, &numPhysicalDevices, null);
+        PhysicalDevice* devices = stackalloc PhysicalDevice[(int) numPhysicalDevices];
+        _vk.EnumeratePhysicalDevices(_instance, &numPhysicalDevices, devices);
+
+        List<Adapter> adapters = new List<Adapter>((int) numPhysicalDevices);
+        for (uint i = 0; i < numPhysicalDevices; i++)
+        {
+            PhysicalDevice device = devices[i];
+
+            PhysicalDeviceProperties properties;
+            _vk.GetPhysicalDeviceProperties(device, &properties);
+            PhysicalDeviceMemoryProperties memoryProps;
+            _vk.GetPhysicalDeviceMemoryProperties(device, &memoryProps);
+            
+            if (properties.ApiVersion < APIVersion)
+                continue;
+
+            string name = new string((sbyte*) properties.DeviceName);
+            // if there isn't even one memory heap... may be a problem. we'll deal with it later!!!!
+            ulong memory = memoryProps.MemoryHeapCount > 0 ? memoryProps.MemoryHeaps[0].Size : 0;
+
+            AdapterType type = properties.DeviceType switch
+            {
+                PhysicalDeviceType.Other => AdapterType.Unknown,
+                PhysicalDeviceType.IntegratedGpu => AdapterType.Integrated,
+                PhysicalDeviceType.DiscreteGpu => AdapterType.Dedicated,
+                PhysicalDeviceType.VirtualGpu => AdapterType.Unknown,
+                PhysicalDeviceType.Cpu => AdapterType.Software,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
+            adapters.Add(new Adapter(device.Handle, name, memory, type, new AdapterSupports()));
+        }
+
+        return adapters.ToArray();
+    }
+
     public override void Dispose()
     {
         if (IsDisposed)

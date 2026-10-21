@@ -7,4 +7,9 @@ Mynt.MessageLogged += (severity, message, _, _) => Console.WriteLine($"[{severit
 
 InstanceInfo info = new InstanceInfo("Create Instance Test");
 Instance instance = Instance.CreateInstance(in info);
+
+Adapter[] adapters = instance.QueryAdapters();
+foreach (Adapter adapter in adapters)
+    Console.WriteLine(adapter);
+
 instance.Dispose();
