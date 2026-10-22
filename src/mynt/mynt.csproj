@@ -1,7 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="Silk.NET.Vulkan" Version="2.23.0" />
-    <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.23.0" />
-    <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.23.0" />
-  </ItemGroup>
+    <PropertyGroup>
+        <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Silk.NET.Vulkan" Version="2.23.0" />
+        <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.23.0" />
+        <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.23.0" />
+    </ItemGroup>
+    
+    <ItemGroup Condition="'$(RuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' == 'osx-arm64'">
+        <None Include="libvulkan.dylib" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="libMoltenVK.dylib" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
 </Project>
