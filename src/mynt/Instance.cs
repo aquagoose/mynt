@@ -21,9 +21,15 @@ public abstract class Instance : IDisposable
     /// <summary>
     /// Create a <see cref="Surface"/>.
     /// </summary>
-    /// <param name="info">The <see cref="SurfaceInfo"/> defining the</param>
-    /// <returns></returns>
+    /// <param name="info">The <see cref="SurfaceInfo"/> describing surface creation.</param>
     public abstract Surface CreateSurface(in SurfaceInfo info);
+
+    /// <summary>
+    /// Create a <see cref="Device"/>.
+    /// </summary>
+    /// <param name="surface">The <see cref="Surface"/> to use while creating the device.</param>
+    /// <param name="adapter">An optional <see cref="Adapter"/> to create the device for.</param>
+    public abstract Device CreateDevice(Surface surface, Adapter? adapter = null);
     
     /// <summary>
     /// Dispose of this <see cref="Instance"/>.
@@ -34,7 +40,6 @@ public abstract class Instance : IDisposable
     /// Create an <see cref="Instance"/>.
     /// </summary>
     /// <param name="info">The <see cref="InstanceInfo"/> describing instance creation.</param>
-    /// <returns></returns>
     public static Instance CreateInstance(in InstanceInfo info)
     {
         RenderAPI api = info.API;

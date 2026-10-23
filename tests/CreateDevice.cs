@@ -62,7 +62,9 @@ else
     throw new PlatformNotSupportedException("Unsupported OS!");
 
 Surface surface = instance.CreateSurface(surfaceInfo);
+Device device = instance.CreateDevice(surface);
 
+device.Dispose();
 surface.Dispose();
 instance.Dispose();
 SDL.DestroyWindow(window);

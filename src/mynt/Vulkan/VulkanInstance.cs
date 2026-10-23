@@ -123,6 +123,25 @@ internal sealed unsafe class VulkanInstance : Instance
     public override Surface CreateSurface(in SurfaceInfo info)
         => new VulkanSurface(_vk, _instance, in info);
 
+    public override Device CreateDevice(Surface surface, Adapter? adapter = null)
+    {
+        PhysicalDevice physicalDevice;
+        if (adapter is Adapter a)
+            physicalDevice = new PhysicalDevice(a.Handle);
+        else
+        {
+            Adapter[] adapters = QueryAdapters();
+            if (adapters.Length == 0)
+                throw new PlatformNotSupportedException("No supported adapters found!");
+            // choose the first supported adapter.
+            // usually Windows and Linux will order the adapters in order of priority,
+            // so the first adapter returned is usually the one that should be used.
+            physicalDevice = new PhysicalDevice(adapters[0].Handle);
+        }
+
+        return new VulkanDevice(_vk, physicalDevice, (VulkanSurface) surface);
+    }
+
     public override void Dispose()
     {
         if (IsDisposed)
