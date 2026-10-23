@@ -1,5 +1,7 @@
 global using VkDevice = Silk.NET.Vulkan.Device;
+using piko.VulkanMemoryAllocator;
 using Silk.NET.Core;
+using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 
 namespace mynt.Vulkan;
@@ -9,15 +11,18 @@ internal sealed unsafe class VulkanDevice : Device
     public override bool IsDisposed { get; protected set; }
 
     private readonly Vk _vk;
+    private readonly VkInstance _instance;
 
     public readonly PhysicalDevice PhysicalDevice;
     public readonly Queues Queues;
 
     public readonly VkDevice Device;
+    public readonly Allocator Allocator;
 
-    public VulkanDevice(Vk vk, PhysicalDevice physicalDevice, VulkanSurface surface)
+    public VulkanDevice(Vk vk, VkInstance instance, PhysicalDevice physicalDevice, VulkanSurface surface)
     {
         _vk = vk;
+        _instance = instance;
         PhysicalDevice = physicalDevice;
 
         uint numQueueFamilies;
@@ -84,6 +89,29 @@ internal sealed unsafe class VulkanDevice : Device
         
         Mynt.Log("Creating device.");
         _vk.CreateDevice(PhysicalDevice, &deviceInfo, null, out Device).Check("Create device");
+        
+        Mynt.Log("Getting device queues.");
+        _vk.GetDeviceQueue(Device, Queues.GraphicsIndex, 0, out Queues.Graphics);
+        _vk.GetDeviceQueue(Device, Queues.PresentIndex, 0, out Queues.Present);
+        _vk.GetDeviceQueue(Device, Queues.ComputeIndex, 0, out Queues.Compute);
+
+        VulkanFunctions funcs = new()
+        {
+            VkGetInstanceProcAddr = SilkMarshal.DelegateToPtr(GetInstanceProcAddress),
+            VkGetDeviceProcAddr = SilkMarshal.DelegateToPtr(GetDeviceProcAddress)
+        };
+
+        AllocatorCreateInfo allocatorInfo = new()
+        {
+            Instance = _instance,
+            PhysicalDevice = PhysicalDevice,
+            Device = Device,
+            PVulkanFunctions = &funcs
+        };
+        
+        Mynt.Log("Creating VMA allocator.");
+        fixed (Allocator* pAllocator = &Allocator)
+            VMA.CreateAllocator(&allocatorInfo, pAllocator).Check("Create allocator");
     }
     
     public override void Dispose()
@@ -92,7 +120,16 @@ internal sealed unsafe class VulkanDevice : Device
             return;
         IsDisposed = true;
         
+        Mynt.Log("Destroying allocator.");
+        VMA.DestroyAllocator(Allocator);
+        
         Mynt.Log("Destroying device.");
         _vk.DestroyDevice(Device, null);
     }
+
+    private void GetInstanceProcAddress(VkInstance instance, byte* pName)
+        => _vk.GetInstanceProcAddr(instance, pName);
+
+    private void GetDeviceProcAddress(VkDevice device, byte* pName)
+        => _vk.GetDeviceProcAddr(device, pName);
 }

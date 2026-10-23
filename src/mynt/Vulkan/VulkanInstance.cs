@@ -134,12 +134,12 @@ internal sealed unsafe class VulkanInstance : Instance
             if (adapters.Length == 0)
                 throw new PlatformNotSupportedException("No supported adapters found!");
             // choose the first supported adapter.
-            // usually Windows and Linux will order the adapters in order of priority,
+            // usually Windows and Linux will return the adapters in order of priority,
             // so the first adapter returned is usually the one that should be used.
             physicalDevice = new PhysicalDevice(adapters[0].Handle);
         }
 
-        return new VulkanDevice(_vk, physicalDevice, (VulkanSurface) surface);
+        return new VulkanDevice(_vk, _instance, physicalDevice, (VulkanSurface) surface);
     }
 
     public override void Dispose()
