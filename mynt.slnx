@@ -2,6 +2,7 @@
   <Folder Name="/tests/">
     <File Path="tests\CreateDevice.cs" />
     <File Path="tests\CreateInstance.cs" />
+    <Project Path="tests/mynt.Tests.Base/mynt.Tests.Base.csproj" />
   </Folder>
   <Project Path="src/mynt/mynt.csproj" />
 </Solution>
