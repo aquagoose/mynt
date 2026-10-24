@@ -113,7 +113,10 @@ internal sealed unsafe class VulkanDevice : Device
         fixed (Allocator* pAllocator = &Allocator)
             VMA.CreateAllocator(&allocatorInfo, pAllocator).Check("Create allocator");
     }
-    
+
+    public override CommandList CreateCommandList()
+        => new VulkanCommandList(_vk, Device, Queues.GraphicsIndex);
+
     public override void Dispose()
     {
         if (IsDisposed)
