@@ -8,5 +8,11 @@ test.Run();
 
 class ClearColorTest() : TestBase("Clear Color Test")
 {
-    
+    protected override void Loop()
+    {
+        CommandList.Begin();
+        CommandList.End();
+        
+        Device.ExecuteCommandList(CommandList);
+    }
 }

@@ -1,4 +1,5 @@
 global using VkDevice = Silk.NET.Vulkan.Device;
+using System.Diagnostics;
 using piko.VulkanMemoryAllocator;
 using Silk.NET.Core;
 using Silk.NET.Core.Native;
@@ -116,6 +117,24 @@ internal sealed unsafe class VulkanDevice : Device
 
     public override CommandList CreateCommandList()
         => new VulkanCommandList(_vk, Device, Queues.GraphicsIndex);
+
+    public override void ExecuteCommandList(CommandList cl)
+    {
+        VulkanCommandList vulkanCl = (VulkanCommandList) cl;
+        CommandBuffer cb = vulkanCl.CurrentCommandBuffer;
+        Debug.Assert(cb.Handle != 0, "No commands have been recorded!");
+        
+        Fence fence = vulkanCl.RegisterSubmitted();
+
+        SubmitInfo submitInfo = new()
+        {
+            SType = StructureType.SubmitInfo,
+            CommandBufferCount = 1,
+            PCommandBuffers = &cb
+        };
+
+        _vk.QueueSubmit(Queues.Graphics, 1, &submitInfo, fence).Check("Submit queue");
+    }
 
     public override void Dispose()
     {

@@ -14,6 +14,13 @@ public abstract class Device : IDisposable
     /// Create a <see cref="CommandList"/>.
     /// </summary>
     public abstract CommandList CreateCommandList();
+
+    /// <summary>
+    /// Queue a <see cref="CommandList"/> for execution.
+    /// </summary>
+    /// <param name="cl">The <see cref="CommandList"/> to execute.</param>
+    /// <remarks>This is an async operation, and the command list may not be executed immediately.</remarks>
+    public abstract void ExecuteCommandList(CommandList cl);
     
     /// <summary>
     /// Dispose of this <see cref="Device"/>.
